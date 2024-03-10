@@ -24,35 +24,29 @@ void setup()
 
 void loop()
 {
-  //   const double celsius = thermistor->readCelsius();
-  //   double VLDR = CALCULATE_VLDR(analogRead(ADC_LDR));
-  //   double RLDR = CALCULATE_RLDR(VLDR,10000);
-  //   double LUX= LUX_CALC_SCALAR * pow(RLDR, LUX_CALC_EXPONENT);
-  //   int PIR =analogRead(ADC_PIR);
-  //   int IR =analogRead(ADC_IR);
-  //   digitalWrite(LDR_CONNECT, LOW);
-  //   digitalWrite(NTC_CONNECT, LOW);
-  //   String Data = 
+    const double celsius = thermistor->readCelsius();
+    double VLDR = CALCULATE_VLDR(analogRead(ADC_LDR));
+    double RLDR = CALCULATE_RLDR(VLDR,10000);
+    double LUX= LUX_CALC_SCALAR * pow(RLDR, LUX_CALC_EXPONENT);
+    int PIR =analogRead(ADC_PIR);
+    int IR =analogRead(ADC_IR);
+    digitalWrite(LDR_CONNECT, LOW);
+    digitalWrite(NTC_CONNECT, LOW);
+    String Data = 
    
-  //   "PIR="+(String)PIR
+    "PIR="+(String)PIR
     
-  //   +"  IR="+(String)IR
+    +"  IR="+(String)IR
 
-  //   +"  LDR="+(String)analogRead(ADC_LDR)
-  //   //+"   VLDR="+(String)VLDR
-  //   //+"   RLDR="+(String)RLDR
-  //   +"   LUX="+(String)LUX
-  //   +"   Temperature="+(String)celsius;
+    +"  LDR="+(String)analogRead(ADC_LDR)
+    //+"   VLDR="+(String)VLDR
+    //+"   RLDR="+(String)RLDR
+    +"   LUX="+(String)LUX
+    +"   Temperature="+(String)celsius;
     
-  //   Serial.println(Data);
-  //   digitalWrite(8, HIGH);
-  //  delay(10);
-    // digitalWrite(8, LOW);
-    // delay(100);
-  
-    lowPowerBoard.longPowerDown(SLEEP_1S);
-  
-   
+    Serial.println(Data);
+
+    //lowPowerBoard.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 
 
 }
