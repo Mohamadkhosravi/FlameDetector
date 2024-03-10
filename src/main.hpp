@@ -2,8 +2,8 @@
 #define MAIN_H_
 
 
-#define ADC_IR PC3
-#define ADC_PIR PD3
+#define ADC_IR A3
+#define ADC_PIR A4
 #define ADC_LDR PC5
 #define ADC_NTC PC2
 #define LDR_CONNECT PD5
