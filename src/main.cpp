@@ -1,31 +1,24 @@
 #include <Arduino.h>
 #include <main.hpp>
-#include<NTC_Thermistor.h>
 #include<LowPower.h>
+#include "NTC.h"
 LowPowerClass lowPowerBoard;
-Thermistor* thermistor;
+
 #define LUX_CALC_SCALAR           12518931
 #define LUX_CALC_EXPONENT         -1.405
+bool FIER=false;
 void setup()
 {
     pinMode(LED, OUTPUT);
     pinMode(LDR_CONNECT, OUTPUT);
     pinMode(NTC_CONNECT, OUTPUT);
     Serial.begin(9600); 
-    thermistor = new NTC_Thermistor(
-    SENSOR_PIN,
-    REFERENCE_RESISTANCE,
-    NOMINAL_RESISTANCE,
-    NOMINAL_TEMPERATURE,
-    B_VALUE,
-    ANALOG_RESOLUTION 
-  );
 
 }
 
 void loop()
 {
-    const double celsius = thermistor->readCelsius();
+    double celsius = temperature(analogRead(ADC_NTC),5);
     double VLDR = CALCULATE_VLDR(analogRead(ADC_LDR));
     double RLDR = CALCULATE_RLDR(VLDR,10000);
     double LUX= LUX_CALC_SCALAR * pow(RLDR, LUX_CALC_EXPONENT);
@@ -33,20 +26,19 @@ void loop()
     int IR =analogRead(ADC_IR);
     digitalWrite(LDR_CONNECT, LOW);
     digitalWrite(NTC_CONNECT, LOW);
-    String Data = 
-   
-    "PIR="+(String)PIR
-    
-    +"  IR="+(String)IR
 
+    String Data = 
+    "PIR="+(String)PIR
+    +"  IR="+(String)IR
     +"  LDR="+(String)analogRead(ADC_LDR)
-    //+"   VLDR="+(String)VLDR
-    //+"   RLDR="+(String)RLDR
     +"   LUX="+(String)LUX
     +"   Temperature="+(String)celsius;
-    digitalWrite(LED,HIGH);
-    Serial.println(Data);
-     delay(200);
+   Serial.println(Data);
+
+   if (IR<60)FIER=true;
+   else FIER = false;
+   digitalWrite(LED, FIER);
+   delay(200);
     //lowPowerBoard.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 
 

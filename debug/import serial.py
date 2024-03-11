@@ -11,7 +11,7 @@ baud_rate = 9600
 
 # =========================
 # Change Scale
-max_points = 10 
+max_points = 100 
 # =========================
 ser = serial.Serial(serial_port, baud_rate)
 num_data_points = 10
