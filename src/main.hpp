@@ -15,7 +15,7 @@
 #define NOMINAL_TEMPERATURE    25
 #define B_VALUE                3950
 #define ANALOG_RESOLUTION      1024
-
+#define LED  8
 #define CALCULATE_VLDR(ADCLDR)((5.0/1024) * ADCLDR )
 #define CALCULATE_RLDR(VLDR, ResPullDown) (((5.0)-(VLDR))*ResPullDown /VLDR)
 

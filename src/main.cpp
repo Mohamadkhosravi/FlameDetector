@@ -8,7 +8,7 @@ Thermistor* thermistor;
 #define LUX_CALC_EXPONENT         -1.405
 void setup()
 {
-    pinMode(8, OUTPUT);
+    pinMode(LED, OUTPUT);
     pinMode(LDR_CONNECT, OUTPUT);
     pinMode(NTC_CONNECT, OUTPUT);
     Serial.begin(9600); 
@@ -20,6 +20,7 @@ void setup()
     B_VALUE,
     ANALOG_RESOLUTION 
   );
+
 }
 
 void loop()
@@ -43,9 +44,9 @@ void loop()
     //+"   RLDR="+(String)RLDR
     +"   LUX="+(String)LUX
     +"   Temperature="+(String)celsius;
-    
+    digitalWrite(LED,HIGH);
     Serial.println(Data);
-
+     delay(200);
     //lowPowerBoard.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 
 
