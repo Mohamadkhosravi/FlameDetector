@@ -1,5 +1,10 @@
 #ifndef MAIN_H_
 #define MAIN_H_
+#include <LowPower.h>
+#include "NTC.h"
+#include "arduinoFFT.h"
+#include "time.h"
+#include "Watchdog.h"
 
 #define ADC_IR A3
 #define ADC_PIR A4
@@ -16,5 +21,44 @@
 #define LED  8
 #define CALCULATE_VLDR(ADCLDR)(ADCLDR/(float)1023 )*5
 #define CALCULATE_RLDR(VLDR, ResPullDown) ((5/VLDR-1)*10000)
+
+#define CHANNEL ADC_PIR
+
+/*=====================================================================*/
+/* FFT Parameters and Setting*/
+/*=====================================================================*/
+const uint16_t samples = 8; //This value MUST ALWAYS be a power of 2
+const float samplingFrequency = 1; //Hz, must be less than 10000 due to ADC
+unsigned int sampling_period_us;
+unsigned long microseconds;
+
+/*
+These are the input and output vectors
+Input vectors receive computed results from FFT
+*/
+float vReal[samples];
+float vImag[samples];
+
+/* Create FFT object with weighing factor storage */
+ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, samples, samplingFrequency, true);
+
+#define SCL_INDEX 0x00
+#define SCL_TIME 0x01
+#define SCL_FREQUENCY 0x02
+#define SCL_PLOT 0x03
+
+void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType);
+
+/*=====================================================================*/
+/* LUX Parameters */
+/*=====================================================================*/
+#define LUX_CALC_SCALAR           12518931
+#define LUX_CALC_EXPONENT         -1.405
+/*=====================================================================*/
+/*  Fier Detection Parameters*/
+/*=====================================================================*/
+bool FIER=false;
+unsigned int FIERCounter=0;
+
 
 #endif

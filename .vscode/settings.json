@@ -4,5 +4,6 @@
     "stm32-for-vscode.armToolchainPath": false,
     "files.associations": {
         "arduino.h": "c"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/Tech/Desktop/FlameDetector/.pio/libdeps/nanoatmega328/Unity"
 }
