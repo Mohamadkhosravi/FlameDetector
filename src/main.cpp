@@ -8,20 +8,32 @@ void setup()
 {
    // watchdog.enable(Watchdog::TIMEOUT_2S);
     pinMode(LED, OUTPUT);
-    pinMode(LDR_CONNECT, OUTPUT);
-    pinMode(NTC_CONNECT, OUTPUT);
+    // pinMode(LDR_CONNECT, OUTPUT);
+    // pinMode(NTC_CONNECT, OUTPUT);
     // Serial.begin(9600); 
     //===============
     /*setup FFT Sampling*/
     sampling_period_us = round(1000000*(1.0/samplingFrequency));
-
+  
 }
 String LastPIR;
 void loop()
 {
+// if(!firstTurnON){
 
-  //  digitalWrite(LED, LOW);
-   // lowPowerBoard.powerDown(SLEEP_2S,ADC_OFF, BOD_OFF);
+//   // while (1)
+//   // {
+//   //   //randomSeed(analogRead(A6));
+
+//   //  long randDelay=randomSeed(analogRead(A6));
+//   //   delay(randDelay);
+//   //   break;
+//   // }
+
+// }
+    firstTurnON=true;
+    //  digitalWrite(LED, LOW);
+    lowPowerBoard.powerDown(SLEEP_2S,ADC_OFF, BOD_OFF);
     // watchdog.tripped();
     //  while (1)
     //  {
@@ -77,22 +89,22 @@ void loop()
     // Serial.print("  LUX="+(String)LUX);
     // Serial.print("  Temp="+(String)celsius);
     // Serial.print("\n");
-while (1)
-{
+// while (1)
+// {
   digitalWrite(LED, HIGH);
-  delay(200);
+  delay(1);
   digitalWrite(LED, LOW);
-  delay(200);
-}
+  // delay(200);
+// }
 
     
-    if (IR<10){
+    if (IR < TRESHOLT_IR_FIER){
       FIER=true;
       FIERCounter++;
     }
     else {
       FIER = false;
-      if(FIERCounter>0) FIERCounter--;
+      if(FIERCounter > 0 ) FIERCounter--;
     }
 
     if(FIERCounter>3)

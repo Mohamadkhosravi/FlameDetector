@@ -24,6 +24,13 @@
 
 #define CHANNEL ADC_PIR
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#define TRESHOLT_IR_FIER 10
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
 /*=====================================================================*/
 /* FFT Parameters and Setting*/
 /*=====================================================================*/
@@ -31,7 +38,7 @@ const uint16_t samples = 8; //This value MUST ALWAYS be a power of 2
 const float samplingFrequency = 1; //Hz, must be less than 10000 due to ADC
 unsigned int sampling_period_us;
 unsigned long microseconds;
-
+bool firstTurnON=false;
 /*
 These are the input and output vectors
 Input vectors receive computed results from FFT
