@@ -5,7 +5,7 @@
 #include "arduinoFFT.h"
 #include "time.h"
 #include "Watchdog.h"
-
+#define ADC_LINE A0
 #define ADC_IR A3
 #define ADC_PIR A4
 #define ADC_LDR PC5
@@ -28,7 +28,7 @@
 #define TRESHOLT_IR_FIER 10
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-
+unsigned int LineVoltage=0;
 
 
 /*=====================================================================*/
@@ -66,6 +66,6 @@ void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType);
 /*=====================================================================*/
 bool FIER=false;
 unsigned int FIERCounter=0;
-
+unsigned char BlinkerTimer=0;
 
 #endif

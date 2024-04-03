@@ -91,9 +91,14 @@ void loop()
     // Serial.print("\n");
 // while (1)
 // {
-  digitalWrite(LED, HIGH);
-  delay(1);
-  digitalWrite(LED, LOW);
+  BlinkerTimer++;
+  if(BlinkerTimer>=4){
+    digitalWrite(LED, HIGH);
+    delay(1);
+    digitalWrite(LED, LOW);
+    BlinkerTimer=0;
+  }
+ 
   // delay(200);
 // }
 
@@ -111,7 +116,9 @@ void loop()
     {
       while (1)
       {
+        LineVoltage=analogRead(ADC_LINE);
         digitalWrite(LED, HIGH);
+
       }
     }
      delay(100);
