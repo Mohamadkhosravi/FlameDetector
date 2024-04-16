@@ -5,6 +5,29 @@
 #include "arduinoFFT.h"
 #include "time.h"
 #include "Watchdog.h"
+
+
+
+#define Enable 1
+#define Disable 0
+#define READ_IR             Enable
+#define READ_TEMPERATURE    Disable
+#define READ_LDR            Disable
+#define READ_PIR            Disable
+#define FFT_PIR             Disable
+#define POWER_DISABLE       Disable
+#define DEBUG               Enable   
+
+# if DEBUG
+  #define log  Serial.print
+#else
+ #define  log  
+#endif
+
+
+
+
+
 // ADC Chanels
 #define ADC_LINE A0
 #define ADC_IR A3
@@ -15,7 +38,7 @@
 // 
 #define LDR_CONNECT PD5
 #define NTC_CONNECT PD4
-#define  ADC_LINE_CONNECT A1
+#define ADC_LINE_CONNECT A1
 
 
 
@@ -27,14 +50,6 @@
 #define CALCULATE_RLDR(VLDR, ResPullDown) ((5/VLDR-1)*10000)
 #define CHANNEL ADC_PIR
 
-#define Enable 1
-#define Disable 0
-#define READ_TEMPERATURE    Disable
-#define READ_LDR            Disable
-#define READ_PIR            Disable
-#define FFT_PIR             Disable
-#define POWER_DISABLE       Disable
-#define DEBUG               Disable
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #define TRESHOLT_IR_FIER 10
