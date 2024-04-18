@@ -1,15 +1,22 @@
 #include <Arduino.h>
 #include <main.hpp>
 #include <avr/power.h>
-
+#include<EEPROM.h>
+#include<SoftwareSerial.h>
+SoftwareSerial Serial1(A5,A2);
 Watchdog watchdog;
 LowPowerClass lowPowerBoard;
+
 uint32_t readVoltageLine(uint32_t ADCValue);
+uint32_t average(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset );
+
 void setup()
 {
   // watchdog.enable(Watchdog::TIMEOUT_2S);
   pinMode(LED, OUTPUT);
   pinMode(ADC_LINE_CONNECT,OUTPUT);
+  pinMode(CALIBRATION_PIN, INPUT);
+
 #if READ_LDR
   pinMode(LDR_CONNECT, OUTPUT);
 #endif
@@ -20,6 +27,9 @@ void setup()
 
 #if DEBUG
   Serial.begin(9600);
+  Serial1.begin(9600);
+
+
 #endif
   //===============
 
@@ -29,38 +39,90 @@ void setup()
 #endif
  firstTurnON=false;
  randomSeed(analogRead(A6));
+  EEPROM.begin();
+  // EEPROM.write(0,0);
+  // EEPROM.write(20,0);
+  calibrationState=bool(EEPROM.read(0));
+  if(calibrationState)IROffset=EEPROM.read(20);
+
+
 }
 String LastPIR;
 void loop()
 {
-   
-  if(!firstTurnON){
-   
-    uint32_t randDelay= random(3000);
+
+  //  delay(50);
+  // log("\nIROffset=");
+  // log(IROffset);
+  // log("\ncalibrationState");
+  // log(calibrationState);
+  if(!firstTurnON)
+  {
+    
+    while (calibrationState)
+    {
+        log("\nIROffset=");
+        log(IROffset);
+        log("\ncalibrationState");
+        log(calibrationState);
+        digitalWrite(LED, HIGH);
+        delay(2);
+        digitalWrite(LED, LOW);
+        delay(2);
+         log("\npin=");
+         log(digitalRead(CALIBRATION_PIN));
+         
+      if(!digitalRead(CALIBRATION_PIN))
+      {
+          delay(10);
+        if(!(digitalRead(CALIBRATION_PIN)))
+        {
+           
+          EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
+           if(average(ADC_IR,10,0)<15){
+    
+             IROffset=char(average(ADC_IR,10,0));
+             calibrationState=false;
+             EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
+             break;
+           }
+           else
+           {
+              calibrationState=true;
+           }
+          
+          
+        }
+        
+    }
+    
+    }
+
+     uint32_t randDelay= random(3000);
      if(randDelay>=6000)randDelay=int(randDelay/2);
      if(randDelay>=60000)randDelay=int(randDelay/10);
-     log("randDelay="+(String)randDelay);
-   
-    while (1)
-    {
-      // watchdog.tripped();
-      if(randDelay>0)
+     log("\n randDelay="+(String)randDelay);
+      while (1)
       {
-        --randDelay;
+        // watchdog.tripped();
+        if(randDelay>0)
+        {
+          --randDelay;
+        }
+        else
+        {
+          break;
+        }
+      
+        delay(1);
       }
-      else
-      {
-        break;
-      }
-    
-      delay(1);
-    }
   }
   firstTurnON=true;
   digitalWrite(LED, LOW);
   lowPowerBoard.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);  
- uint32_t VoltageLine = readVoltageLine(analogRead(ADC_LINE));
-
+ 
+  // #define numberOFSamplae
+    uint32_t VoltageLine = readVoltageLine(analogRead(ADC_LINE));
 #if READ_TEMPERATURE 
   digitalWrite(NTC_CONNECT, LOW);
   double celsius = temperature(analogRead(ADC_NTC), 5);
@@ -72,7 +134,7 @@ void loop()
   double LUX = LUX_CALC_SCALAR * pow(RLDR, LUX_CALC_EXPONENT);
 #endif
 
-unsigned int IR = analogRead(ADC_IR);
+unsigned int IR = average(ADC_IR,5,IROffset);
 
 #if READ_PIR
   int PIR = analogRead(ADC_PIR);
@@ -109,7 +171,8 @@ unsigned int IR = analogRead(ADC_IR);
   log("PIR=" + PIR);
 #endif
 #if READ_IR
-  log("  IR=" + (String)IR);
+  log("IR=");
+  log(IR);
 #endif
 #if READ_LDR
   log("  LDR=" + (String)analogRead(ADC_LDR));
@@ -133,7 +196,6 @@ unsigned int IR = analogRead(ADC_IR);
   }
   else
   {
-
     BlinkerTimer++;
     if (BlinkerTimer >= 3)
     {
@@ -143,6 +205,7 @@ unsigned int IR = analogRead(ADC_IR);
       BlinkerTimer = 0;
     }
   }
+
   if (IR < TRESHOLT_IR_FIER)
   {
     FIER = true;
@@ -160,7 +223,9 @@ unsigned int IR = analogRead(ADC_IR);
     while (1)
     {
       // watchdog.tripped();
+       
        VoltageLine = readVoltageLine(analogRead(ADC_LINE));
+       VoltageLine = average(ADC_LINE,5,IROffset);
       if (VoltageLine < MINIMUM_VOLTAGE_LINE_VALID)
       {
         digitalWrite(LED, LOW);
@@ -184,6 +249,23 @@ unsigned int IR = analogRead(ADC_IR);
   uint16_t VCC = 3;
   digitalWrite(ADC_LINE_CONNECT, LOW);
   uint32_t voltage=(R1 + R2)/R2  * ADCValue * VCC / ADC_10bit;
-  log("\n VoltageLine"+(String)voltage);
+  // log("\n VoltageLine"+(String)voltage);
   return voltage;
+ }
+
+ uint32_t average(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset )
+  {
+     //std::vector<uint16_t> sicleOfSampling;
+    
+    uint64_t bufferOFanarage=0;
+    for (uint16_t numberOfAverage = 0; numberOfAverage < sicleOfSampling-1 ; numberOfAverage++)
+    {
+      
+    bufferOFanarage = bufferOFanarage +analogRead(numberOfPin);
+    _delay_us(100);
+    }
+     uint32_t result =int(bufferOFanarage/(sicleOfSampling));
+     if(result>=ADCOffset)return result=result-ADCOffset;
+     else return 0;
+    
  }

@@ -19,14 +19,10 @@
 #define DEBUG               Enable   
 
 # if DEBUG
-  #define log  Serial.print
+  #define log  Serial1.print
 #else
- #define  log  
+  #define  log  
 #endif
-
-
-
-
 
 // ADC Chanels
 #define ADC_LINE A0
@@ -34,7 +30,7 @@
 #define ADC_PIR A4
 #define ADC_LDR PC5
 #define ADC_NTC A2
-
+#define CALIBRATION_PIN  DD2
 // 
 #define LDR_CONNECT PD5
 #define NTC_CONNECT PD4
@@ -92,7 +88,11 @@ void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType);
 /*  Fier Detection Parameters*/
 /*=====================================================================*/
 bool FIER=false;
-unsigned int FIERCounter=0;
-unsigned char BlinkerTimer=0;
-
+uint32_t FIERCounter=0;
+uint8_t BlinkerTimer=0;
+uint32_t debounce=0;
+uint8_t IROffset=0;
+bool calibrationState=false;
+    #define ADDRESS_CALIBRATION_STATE 0
+    #define ADDRESS_OFFSET_Value 20
 #endif
