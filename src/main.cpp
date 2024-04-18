@@ -8,7 +8,7 @@ Watchdog watchdog;
 LowPowerClass lowPowerBoard;
 
 uint32_t readVoltageLine(uint32_t ADCValue);
-uint32_t average(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset );
+uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset );
 
 void setup()
 {
@@ -71,17 +71,16 @@ void loop()
         delay(2);
          log("\npin=");
          log(digitalRead(CALIBRATION_PIN));
-         
+ 
       if(!digitalRead(CALIBRATION_PIN))
       {
           delay(10);
         if(!(digitalRead(CALIBRATION_PIN)))
-        {
-           
-          EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
-           if(average(ADC_IR,10,0)<15){
-    
-             IROffset=char(average(ADC_IR,10,0));
+        {  
+
+           EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
+           if(averageFilter(ADC_IR,10,0)<15){
+             IROffset=char(averageFilter(ADC_IR,10,0));
              calibrationState=false;
              EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
              break;
@@ -97,7 +96,7 @@ void loop()
     }
     
     }
-
+ //todo : check firist on turn on current...
      uint32_t randDelay= random(3000);
      if(randDelay>=6000)randDelay=int(randDelay/2);
      if(randDelay>=60000)randDelay=int(randDelay/10);
@@ -134,7 +133,7 @@ void loop()
   double LUX = LUX_CALC_SCALAR * pow(RLDR, LUX_CALC_EXPONENT);
 #endif
 
-unsigned int IR = average(ADC_IR,5,IROffset);
+unsigned int IR = averageFilter(ADC_IR,5,IROffset);
 
 #if READ_PIR
   int PIR = analogRead(ADC_PIR);
@@ -225,7 +224,6 @@ unsigned int IR = average(ADC_IR,5,IROffset);
       // watchdog.tripped();
        
        VoltageLine = readVoltageLine(analogRead(ADC_LINE));
-       VoltageLine = average(ADC_LINE,5,IROffset);
       if (VoltageLine < MINIMUM_VOLTAGE_LINE_VALID)
       {
         digitalWrite(LED, LOW);
@@ -253,19 +251,19 @@ unsigned int IR = average(ADC_IR,5,IROffset);
   return voltage;
  }
 
- uint32_t average(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset )
+ uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset )
   {
-     //std::vector<uint16_t> sicleOfSampling;
+    //  std::vector<uint16_t> sicleOfSampling[];
     
-    uint64_t bufferOFanarage=0;
+    uint64_t buffer=0;
     for (uint16_t numberOfAverage = 0; numberOfAverage < sicleOfSampling-1 ; numberOfAverage++)
     {
       
-    bufferOFanarage = bufferOFanarage +analogRead(numberOfPin);
+    buffer = buffer +analogRead(numberOfPin);
     _delay_us(100);
     }
-     uint32_t result =int(bufferOFanarage/(sicleOfSampling));
-     if(result>=ADCOffset)return result=result-ADCOffset;
+     uint32_t result =int(buffer/(sicleOfSampling));
+     if(result>=ADCOffset) return result-ADCOffset;
      else return 0;
     
  }
