@@ -6,10 +6,10 @@
 SoftwareSerial Serial1(A5,A2);
 Watchdog watchdog;
 LowPowerClass lowPowerBoard;
-
+uint32_t *claback(uint32_t);
 uint32_t readVoltageLine(uint32_t ADCValue);
 uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset );
-
+ uint32_t midFilter(uint32_t(*callbackData),uint16_t repeatOfSampling, uint16_t Offset );
 void setup()
 {
   // watchdog.enable(Watchdog::TIMEOUT_2S);
@@ -69,8 +69,8 @@ void loop()
         delay(2);
         digitalWrite(LED, LOW);
         delay(2);
-         log("\npin=");
-         log(digitalRead(CALIBRATION_PIN));
+        log("\npin=");
+        log(digitalRead(CALIBRATION_PIN));
  
       if(!digitalRead(CALIBRATION_PIN))
       {
@@ -122,6 +122,7 @@ void loop()
  
   // #define numberOFSamplae
     uint32_t VoltageLine = readVoltageLine(analogRead(ADC_LINE));
+    midFilter(readVoltageLine(analogRead(ADC_LINE)),3, 0 );
 #if READ_TEMPERATURE 
   digitalWrite(NTC_CONNECT, LOW);
   double celsius = temperature(analogRead(ADC_NTC), 5);
@@ -249,6 +250,25 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
   uint32_t voltage=(R1 + R2)/R2  * ADCValue * VCC / ADC_10bit;
   // log("\n VoltageLine"+(String)voltage);
   return voltage;
+ }
+
+
+ uint32_t midFilter(uint32_t(*callbackData),uint16_t repeatOfSampling, uint16_t Offset )
+  {
+    //  std::vector<uint16_t> sicleOfSampling[];
+    
+    uint64_t buffer=0;
+    for (uint16_t numberOfAverage = 1; numberOfAverage < repeatOfSampling ; numberOfAverage++)
+    {
+      
+    buffer = buffer + (*callbackData);
+    }
+    // _delay_us(100);
+    // }
+    //  uint32_t result =int(buffer/(repeatOfSampling));
+    //  if(result>=ADCOffset) return result-ADCOffset;
+    //  else return 0;
+    
  }
 
  uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset )
