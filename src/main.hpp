@@ -17,6 +17,8 @@
 #define FFT_PIR             Disable
 #define POWER_DISABLE       Disable
 #define DEBUG               Enable   
+#define  POWER_OFF Enable
+#define  POWER_ON  Enable
 
 # if DEBUG
   #define log  Serial1.print
@@ -48,7 +50,7 @@
 
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#define TRESHOLT_IR_FIER 10
+#define TRESHOLT_IR_FIER 7
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #define MINIMUM_VOLTAGE_LINE_VALID 9
 

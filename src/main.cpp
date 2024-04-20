@@ -6,16 +6,16 @@
 SoftwareSerial Serial1(A5,A2);
 Watchdog watchdog;
 LowPowerClass lowPowerBoard;
-uint32_t *claback(uint32_t);
+
 uint32_t readVoltageLine(uint32_t ADCValue);
 uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset );
- uint32_t midFilter(uint32_t(*callbackData),uint16_t repeatOfSampling, uint16_t Offset );
+
 void setup()
 {
   // watchdog.enable(Watchdog::TIMEOUT_2S);
   pinMode(LED, OUTPUT);
   pinMode(ADC_LINE_CONNECT,OUTPUT);
-  pinMode(CALIBRATION_PIN, INPUT);
+  pinMode(CALIBRATION_PIN, INPUT_PULLUP);
 
 #if READ_LDR
   pinMode(LDR_CONNECT, OUTPUT);
@@ -69,12 +69,12 @@ void loop()
         delay(2);
         digitalWrite(LED, LOW);
         delay(2);
-        log("\npin=");
-        log(digitalRead(CALIBRATION_PIN));
+         log("\npin=");
+         log(digitalRead(CALIBRATION_PIN));
  
       if(!digitalRead(CALIBRATION_PIN))
       {
-          delay(10);
+          // delay(10);
         if(!(digitalRead(CALIBRATION_PIN)))
         {  
 
@@ -83,6 +83,17 @@ void loop()
              IROffset=char(averageFilter(ADC_IR,10,0));
              calibrationState=false;
              EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
+              digitalWrite(LED, HIGH);
+              delay(10);
+              digitalWrite(LED, LOW);
+              delay(10);
+              digitalWrite(LED, HIGH);
+              delay(10);
+              digitalWrite(LED, LOW);
+              delay(10);
+
+
+
              break;
            }
            else
@@ -97,32 +108,48 @@ void loop()
     
     }
  //todo : check firist on turn on current...
-     uint32_t randDelay= random(3000);
-     if(randDelay>=6000)randDelay=int(randDelay/2);
-     if(randDelay>=60000)randDelay=int(randDelay/10);
+     uint8_t randDelay= random(33,1000);
+    //  if(randDelay>=6000)randDelay=int(randDelay/2);
+    //  if(randDelay>=60000)randDelay=int(randDelay/10);
      log("\n randDelay="+(String)randDelay);
-      while (1)
-      {
-        // watchdog.tripped();
-        if(randDelay>0)
-        {
-          --randDelay;
-        }
-        else
-        {
-          break;
-        }
-      
-        delay(1);
-      }
+
+  for(uint8_t repeat=0 ;repeat<= randDelay; repeat++ )
+  {
+    lowPowerBoard.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
+  }
+
+
+      // while (1)
+      // {
+        
+      // #if POWER_OFF
+      //   power_adc_disable();
+
+      //   power_usart0_disable();
+      // #endif
+      //   // watchdog.tripped();
+      //   if(randDelay>0)
+      //   {
+      //     --randDelay;
+      //   }
+      //   else
+      //   {
+      //     #if POWER_ON
+      //     power_adc_enable();
+      //     power_usart0_enable();
+      //     #endif
+      //     break;
+
+      //   }
+    
+
   }
   firstTurnON=true;
   digitalWrite(LED, LOW);
   lowPowerBoard.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);  
- 
+  
   // #define numberOFSamplae
     uint32_t VoltageLine = readVoltageLine(analogRead(ADC_LINE));
-    midFilter(readVoltageLine(analogRead(ADC_LINE)),3, 0 );
 #if READ_TEMPERATURE 
   digitalWrite(NTC_CONNECT, LOW);
   double celsius = temperature(analogRead(ADC_NTC), 5);
@@ -182,13 +209,6 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
   log("  Temp=" + (String)celsius +"\n");
 #endif
 
-#if POWER_DISABLE
-  power_adc_disable();
-  power_spi_disable();
-  power_timer0_disable();
-  power_timer1_disable();
-  power_usart0_disable();
-#endif
   
   if (VoltageLine < MINIMUM_VOLTAGE_LINE_VALID)
   {
@@ -200,7 +220,7 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
     if (BlinkerTimer >= 3)
     {
       digitalWrite(LED, HIGH);
-      _delay_us(200);
+      _delay_us(100);
       digitalWrite(LED, LOW);
       BlinkerTimer = 0;
     }
@@ -250,25 +270,6 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
   uint32_t voltage=(R1 + R2)/R2  * ADCValue * VCC / ADC_10bit;
   // log("\n VoltageLine"+(String)voltage);
   return voltage;
- }
-
-
- uint32_t midFilter(uint32_t(*callbackData),uint16_t repeatOfSampling, uint16_t Offset )
-  {
-    //  std::vector<uint16_t> sicleOfSampling[];
-    
-    uint64_t buffer=0;
-    for (uint16_t numberOfAverage = 1; numberOfAverage < repeatOfSampling ; numberOfAverage++)
-    {
-      
-    buffer = buffer + (*callbackData);
-    }
-    // _delay_us(100);
-    // }
-    //  uint32_t result =int(buffer/(repeatOfSampling));
-    //  if(result>=ADCOffset) return result-ADCOffset;
-    //  else return 0;
-    
  }
 
  uint32_t averageFilter(uint32_t numberOfPin,uint16_t sicleOfSampling, uint16_t ADCOffset )
