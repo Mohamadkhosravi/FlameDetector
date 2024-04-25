@@ -284,7 +284,7 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
     _delay_us(100);
     }
      uint32_t result =int(buffer/(sicleOfSampling));
-     if(result>=ADCOffset) return result-ADCOffset;
-     else return 0;
+     if(result>ADCOffset) return result-ADCOffset;
+     else return result;
     
  }
