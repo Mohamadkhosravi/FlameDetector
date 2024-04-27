@@ -51,11 +51,6 @@ String LastPIR;
 void loop()
 {
 
-  //  delay(50);
-  // log("\nIROffset=");
-  // log(IROffset);
-  // log("\ncalibrationState");
-  // log(calibrationState);
   if(!firstTurnON)
   {
     
@@ -91,9 +86,6 @@ void loop()
               delay(10);
               digitalWrite(LED, LOW);
               delay(10);
-
-
-
              break;
            }
            else
@@ -109,39 +101,14 @@ void loop()
     }
  //todo : check firist on turn on current...
      uint8_t randDelay= random(33,1000);
-    //  if(randDelay>=6000)randDelay=int(randDelay/2);
-    //  if(randDelay>=60000)randDelay=int(randDelay/10);
-     log("\n randDelay="+(String)randDelay);
+     if(randDelay>=1000)randDelay=int(randDelay/2);
+     if(randDelay>=60000)randDelay=int(randDelay/10);
+    log("\n randDelay="+(String)randDelay);
+    for(uint8_t repeat=0 ;repeat<= randDelay; repeat++ )
+    {
+      lowPowerBoard.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
+    }
 
-  for(uint8_t repeat=0 ;repeat<= randDelay; repeat++ )
-  {
-    lowPowerBoard.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
-  }
-
-
-      // while (1)
-      // {
-        
-      // #if POWER_OFF
-      //   power_adc_disable();
-
-      //   power_usart0_disable();
-      // #endif
-      //   // watchdog.tripped();
-      //   if(randDelay>0)
-      //   {
-      //     --randDelay;
-      //   }
-      //   else
-      //   {
-      //     #if POWER_ON
-      //     power_adc_enable();
-      //     power_usart0_enable();
-      //     #endif
-      //     break;
-
-      //   }
-    
 
   }
   firstTurnON=true;
@@ -284,6 +251,9 @@ unsigned int IR = averageFilter(ADC_IR,5,IROffset);
     _delay_us(100);
     }
      uint32_t result =int(buffer/(sicleOfSampling));
+     if(ADCOffset==0){
+       return result;
+     }
      if(result>ADCOffset) return result-ADCOffset;
      else return result;
     
