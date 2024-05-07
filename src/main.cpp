@@ -22,6 +22,7 @@ void setup()
     pinMode(LED, OUTPUT);
     pinMode(ADC_LINE_CONNECT,OUTPUT);
     pinMode(CALIBRATION_PIN, INPUT_PULLUP);
+
   #if READ_LDR
     pinMode(LDR_CONNECT, OUTPUT);
   #endif
@@ -64,29 +65,33 @@ void loop()
      // Calibration routine
     while (calibrationState)
     {
-        log("\nIROffset=");
-        log(IROffset);
-        log("\ncalibrationState");
-        log(calibrationState);
-        digitalWrite(LED, HIGH);
-        delay(2);
-        digitalWrite(LED, LOW);
-        delay(2);
-         log("\npin=");
-         log(digitalRead(CALIBRATION_PIN));
- 
+      log("\nIROffset=");
+      log(IROffset);
+      log("\ncalibrationState");
+      log(calibrationState);
+
+      digitalWrite(LED, HIGH);
+      delay(2);
+      digitalWrite(LED, LOW);
+      delay(2);
+  
+      //pushed calibration button
       if(!digitalRead(CALIBRATION_PIN))
       {
         //Todo: add debounce time 
         if(!(digitalRead(CALIBRATION_PIN)))
         {  
           // Calibration process
+
+          // write calibration state 0 in EEPROM
           EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
          
           if(averageFilter(ADC_IR,10,0)< MINIMUM_OFFSET_VALID )
           {
+            //Reading offset value from ADC and after averaging
             IROffset=char(averageFilter(ADC_IR,10,0));
             calibrationState=false;
+            // write offset value in EEPROM
             EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
             break;
           }
@@ -109,7 +114,7 @@ void loop()
     while(randDelay > MAXIMUM_RANDOM_DELAY ) randDelay= int(randDelay/2);
 
     // Put the board to sleep for a random amount of time when the board is powered on for the first time
-    //maximum random delay is 15ms*1000= 1.5 s
+    // Maximum random delay is 15ms*1000= 1.5 s
     for(uint16_t repeat=0 ;repeat<= randDelay; repeat++ )
     {
       lowPowerBoard.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
