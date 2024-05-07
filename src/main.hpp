@@ -17,8 +17,7 @@
 #define FFT_PIR             Disable
 #define POWER_DISABLE       Disable
 #define DEBUG               Enable   
-#define  POWER_OFF Enable
-#define  POWER_ON  Enable
+
 
 # if DEBUG
   #define log  Serial1.print
@@ -26,6 +25,11 @@
   #define  log  
 #endif
 
+
+
+#define MINIMUM_RANDOM_DELAY 33 // 33*15ms=~ 0.5s
+#define MAXIMUM_RANDOM_DELAY 1000 //1000*15ms=1.5s
+#define MINIMUM_OFFSET_VALID 15 //MINIMUM_OFFSET_VALID when IR pins is shortcut
 // ADC Chanels
 #define ADC_LINE A0
 #define ADC_IR A3

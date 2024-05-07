@@ -3,55 +3,65 @@
 #include <avr/power.h>
 #include<EEPROM.h>
 #include<SoftwareSerial.h>
+// Define the software serial port
 SoftwareSerial Serial1(A5,A2);
+
+// Define the Watchdog and LowPowerClass instances
 Watchdog watchdog;
 LowPowerClass lowPowerBoard;
 
+// Function prototypes
 uint32_t readVoltageLine(uint32_t ADCValue);
 uint32_t averageFilter(uint32_t numberOfPin,uint16_t samplingScale, uint16_t ADCOffset );
 
 void setup()
 {
-  // watchdog.enable(Watchdog::TIMEOUT_2S);
-  pinMode(LED, OUTPUT);
-  pinMode(ADC_LINE_CONNECT,OUTPUT);
-  pinMode(CALIBRATION_PIN, INPUT_PULLUP);
+  //watchdog.enable(Watchdog::TIMEOUT_2S);
 
-#if READ_LDR
-  pinMode(LDR_CONNECT, OUTPUT);
-#endif
+   // Set pin modes
+    pinMode(LED, OUTPUT);
+    pinMode(ADC_LINE_CONNECT,OUTPUT);
+    pinMode(CALIBRATION_PIN, INPUT_PULLUP);
+  #if READ_LDR
+    pinMode(LDR_CONNECT, OUTPUT);
+  #endif
+  #if READ_TEMPERATURE
+    pinMode(NTC_CONNECT, OUTPUT);
+  #endif
 
-#if READ_TEMPERATURE
-  pinMode(NTC_CONNECT, OUTPUT);
-#endif
-
-#if DEBUG
-  Serial.begin(9600);
-  Serial1.begin(9600);
-
-
-#endif
+  // Initialize software serial for debugging
+  #if DEBUG
+    Serial.begin(9600);
+    Serial1.begin(9600);
+  #endif
   //===============
 
 #if FFT_PIR
   /*setup FFT Sampling*/
   sampling_period_us = round(1000000 * (1.0 / samplingFrequency));
 #endif
- firstTurnON=false;
+
+ //set random seed for random delay when start code 
  randomSeed(analogRead(A6));
+
+ //set flag First start
+ firstTurnON=false;
+
+  // Initialize EEPROM
   EEPROM.begin();
+
+  // Read calibration state from EEPROM
   calibrationState=bool(EEPROM.read(0));
+
+  // Read IROffset from EEPROM
   if(calibrationState)IROffset=EEPROM.read(20);
-
-
 }
-String LastPIR;
 void loop()
 {
 
   if(!firstTurnON)
   {
-    
+     // Calibration routine
     while (calibrationState)
     {
         log("\nIROffset=");
@@ -67,28 +77,23 @@ void loop()
  
       if(!digitalRead(CALIBRATION_PIN))
       {
+        //Todo: add debounce time 
         if(!(digitalRead(CALIBRATION_PIN)))
         {  
-
-           EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
-           if(averageFilter(ADC_IR,10,0)<15){
-             IROffset=char(averageFilter(ADC_IR,10,0));
-             calibrationState=false;
-             EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
-              digitalWrite(LED, HIGH);
-              delay(10);
-              digitalWrite(LED, LOW);
-              delay(10);
-              digitalWrite(LED, HIGH);
-              delay(10);
-              digitalWrite(LED, LOW);
-              delay(10);
-             break;
-           }
-           else
-           {
-              calibrationState=true;
-           }
+          // Calibration process
+          EEPROM.update(ADDRESS_CALIBRATION_STATE, 0);
+         
+          if(averageFilter(ADC_IR,10,0)< MINIMUM_OFFSET_VALID )
+          {
+            IROffset=char(averageFilter(ADC_IR,10,0));
+            calibrationState=false;
+            EEPROM.write(ADDRESS_OFFSET_Value, IROffset);
+            break;
+          }
+          else
+          {
+            calibrationState=true;
+          }
           
           
         }
@@ -96,11 +101,16 @@ void loop()
     }
     
    }
-     uint8_t randDelay= random(33,1000);
-     if(randDelay>=1000)randDelay=int(randDelay/2);
-     if(randDelay>=60000)randDelay=int(randDelay/10);
+     // Random delay to optimize power and avoid simultaneous current draw in boards during startup
+    uint16_t randDelay= random(MINIMUM_RANDOM_DELAY,MAXIMUM_RANDOM_DELAY);
     log("\n randDelay="+(String)randDelay);
-    for(uint8_t repeat=0 ;repeat<= randDelay; repeat++ )
+
+    //Random Delay ERROR handling
+    while(randDelay > MAXIMUM_RANDOM_DELAY ) randDelay= int(randDelay/2);
+
+    // Put the board to sleep for a random amount of time when the board is powered on for the first time
+    //maximum random delay is 15ms*1000= 1.5 s
+    for(uint16_t repeat=0 ;repeat<= randDelay; repeat++ )
     {
       lowPowerBoard.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
     }
