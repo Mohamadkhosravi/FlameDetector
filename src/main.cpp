@@ -35,18 +35,17 @@ void setup()
     Serial.begin(9600);
     Serial1.begin(9600);
   #endif
-  //===============
 
-#if FFT_PIR
-  /*setup FFT Sampling*/
-  sampling_period_us = round(1000000 * (1.0 / samplingFrequency));
-#endif
+  #if FFT_PIR
+    /*setup FFT Sampling*/
+    sampling_period_us = round(1000000 * (1.0 / samplingFrequency));
+  #endif
 
  //set random seed for random delay when start code 
  randomSeed(analogRead(A6));
 
- //set flag First start
- firstTurnON=false;
+  //set flag First start
+  firstTurnON=false;
 
   // Initialize EEPROM
   EEPROM.begin();
@@ -59,7 +58,7 @@ void setup()
 }
 void loop()
 {
-
+  // Calibration and Random Delay routine if it's the first run
   if(!firstTurnON)
   {
      // Calibration routine
@@ -122,13 +121,17 @@ void loop()
 
 
   }
-  
   firstTurnON=true;
+
+// Turn off LED and put the board to sleep for 2 seconds
   digitalWrite(LED, LOW);
   lowPowerBoard.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF);  
   uint32_t VoltageLine = readVoltageLine(analogRead(ADC_LINE));
 
-
+ //=====================================================//
+ // Read sensor values and perform necessary calculations
+ //=====================================================//
+   // PIR sensor reading and processing
 #if READ_PIR
   int PIR = analogRead(ADC_PIR);
 
@@ -137,7 +140,7 @@ void loop()
     microseconds = micros();
     for (int i = 0; i < samples; i++)
     {
-      vReal[i] = analogRead(CHANNEL);
+      vReal[i] = analogRead(ADC_PIR);
       vImag[i] = 0;
       while (micros() - microseconds < sampling_period_us)
       {
@@ -162,12 +165,14 @@ void loop()
   log("PIR=" + PIR);
 #endif
 
+  // IR sensor reading and processing
 #if READ_IR
   unsigned int IR = averageFilter(ADC_IR,5,IROffset);
   log("IR=");
   log(IR);
 #endif
 
+  // LDR sensor reading and processing
 #if READ_LDR
   digitalWrite(LDR_CONNECT, LOW);
   double VLDR = CALCULATE_VLDR(analogRead(ADC_LDR));
@@ -177,13 +182,14 @@ void loop()
   log("  LUX=" + (String)LUX);
 #endif
 
+  // Temperature sensor reading and processing
 #if READ_TEMPERATURE
   digitalWrite(NTC_CONNECT, LOW);
   double celsius = temperature(analogRead(ADC_NTC), 5);
   log("  Temp=" + (String)celsius +"\n");
 #endif
 
-  
+ //
   if (VoltageLine < MINIMUM_VOLTAGE_LINE_VALID)
   {
     digitalWrite(LED, LOW);
@@ -191,38 +197,37 @@ void loop()
   else
   {
     BlinkerTimer++;
-    if (BlinkerTimer >= 3)
+    if (BlinkerTimer >= BLINK_TIME)
     {
       digitalWrite(LED, HIGH);
-      _delay_us(100);
+      _delay_us(BLINK_TURN_ON_TIME);
       digitalWrite(LED, LOW);
       BlinkerTimer = 0;
     }
   }
-
-  if (IR < TRESHOLT_IR_FIER)
+  // Check for fire condition and trigger appropriate actions
+  if (IR < THRESHOLD_IR_FIRE)
   {
-    FIER = true;
-    FIERCounter++;
+    FIRE = true;
+    FIRECounter++;
   }
   else
   {
-    FIER = false;
-    if (FIERCounter > 0)
-      FIERCounter--;
+    FIRE = false;
+    if (FIRECounter > 0) FIRECounter--;
   }
 
-  if (FIERCounter > 3)
+  if (FIRECounter > MAXIMUM_REPEAT_FIRE)
   {
     while (1)
     {
       // watchdog.tripped();
-       VoltageLine = readVoltageLine(analogRead(ADC_LINE));
+        VoltageLine = readVoltageLine(analogRead(ADC_LINE));
       if (VoltageLine < MINIMUM_VOLTAGE_LINE_VALID)
       {
         digitalWrite(LED, LOW);
-        FIERCounter = 0;
-        FIER=false;
+        FIRECounter = 0;
+        FIRE=false;
         break;
       }
       else
