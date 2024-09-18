@@ -47,7 +47,7 @@ void setup()
   //set flag First start
   firstTurnON=false;
 
-  // Initialize EEPROM
+  // Initialize EEPROM/
   EEPROM.begin();
 
   // Read calibration state from EEPROM
@@ -55,9 +55,11 @@ void setup()
 
   // Read IROffset from EEPROM
   if(calibrationState)IROffset=EEPROM.read(20);
+
 }
 void loop()
 {
+
   // Calibration and Random Delay routine if it's the first run
   if(!firstTurnON)
   {
@@ -168,8 +170,9 @@ void loop()
   // IR sensor reading and processing
 #if READ_IR
   unsigned int IR = averageFilter(ADC_IR,5,IROffset);
-  log("IR=");
+ log("U");
   log(IR);
+
 #endif
 
   // LDR sensor reading and processing

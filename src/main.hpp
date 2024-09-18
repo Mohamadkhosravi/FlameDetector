@@ -22,7 +22,7 @@
 #define LED                 8
 
 /*=====================================================================*/
-/* Enable or disable various sensor readings and functionalities       */
+/*   Enable or disable various sensor readings and functionalities     */
 /*=====================================================================*/
 
 #define Enable   1 
@@ -104,6 +104,7 @@ ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, samples, samplingFrequen
 /*=====================================================================*/
 /*                      Global variables                               */
 /*=====================================================================*/
+
 bool firstTurnON=false;
 bool FIRE=false;//Fire State
 bool calibrationState=false;
