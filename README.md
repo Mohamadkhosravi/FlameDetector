@@ -1,10 +1,5 @@
-# FlameDetector
-Flame Detector
-# Sensor System Documentation
 
-This document explains the implementation and functionality of the provided sensor system code. Each section of the code is described in detail to facilitate understanding, maintenance, and potential enhancements.
-
----
+# Flame Detector Documentation
 
 ## Table of Contents
 1. [Overview](#overview)
